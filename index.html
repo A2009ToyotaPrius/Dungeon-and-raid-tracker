@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny 2 Activity Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --destiny-blue: #00b4d8;
+            --destiny-orange: #f4a261;
+            --destiny-purple: #9d4edd;
+            --destiny-dark: #0a0e27;
+            --destiny-panel: rgba(16, 20, 40, 0.85);
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1f3a 0%, #0a0e27 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .glass-panel {
+            background: var(--destiny-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .activity-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--destiny-blue);
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);
+        }
+        
+        .completed {
+            border-left: 4px solid #10b981;
+        }
+        
+        .completed .status-indicator {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, var(--destiny-blue), #0077b6);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 180, 216, 0.4);
+        }
+        
+        .input-destiny {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .input-destiny:focus {
+            outline: none;
+            border-color: var(--destiny-blue);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
+        }
+        
+        .btn-destiny {
+            background: linear-gradient(135deg, var(--destiny-blue), #0077b6);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-destiny:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, rgba(0, 180, 216, 0.1), rgba(0, 119, 182, 0.05));
+            border: 1px solid rgba(0, 180, 216, 0.2);
+        }
+        
+        .modal-enter {
+            animation: modalSlide 0.3s ease-out;
+        }
+        
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .difficulty-easy { color: #10b981; }
+        .difficulty-medium { color: #f4a261; }
+        .difficulty-hard { color: #ef4444; }
+        
+        .fireteam-slot {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .fireteam-filled {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+        }
+        
+        .loot-tag {
+            background: rgba(244, 162, 97, 0.2);
+            border: 1px solid var(--destiny-orange);
+            color: var(--destiny-orange);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Animated Starfield Background -->
+    <div class="star-field" id="starfield"></div>
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-orbitron text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
+                        GUARDIAN LOG
+                    </h1>
+                    <p class="text-xs text-gray-400 tracking-widest uppercase">Raid & Dungeon Tracker</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 items-center">
+                <div class="text-right hidden sm:block">
+                    <div class="text-sm text-gray-400">Total Clears</div>
+                    <div class="font-orbitron text-2xl font-bold text-cyan-400" id="totalClears">0</div>
+                </div>
+                <button onclick="exportData()" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-semibold">
+                    Export Data
+                </button>
+                <label class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-semibold cursor-pointer">
+                    Import
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(this)">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-box rounded-xl p-4">
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Raid Clears</div>
+                <div class="font-orbitron text-3xl font-bold text-white mt-1" id="raidCount">0</div>
+            </div>
+            <div class="stat-box rounded-xl p-4">
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Dungeon Clears</div>
+                <div class="font-orbitron text-3xl font-bold text-white mt-1" id="dungeonCount">0</div>
+            </div>
+            <div class="stat-box rounded-xl p-4">
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Flawless Runs</div>
+                <div class="font-orbitron text-3xl font-bold text-yellow-400 mt-1" id="flawlessCount">0</div>
+            </div>
+            <div class="stat-box rounded-xl p-4">
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Contest Mode</div>
+                <div class="font-orbitron text-3xl font-bold text-purple-400 mt-1" id="contestCount">0</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <button onclick="switchTab('raids')" id="tab-raids" class="tab-active px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap">
+                RAIDS
+            </button>
+            <button onclick="switchTab('dungeons')" id="tab-dungeons" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
+                DUNGEONS
+            </button>
+            <button onclick="switchTab('history')" id="tab-history" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
+                HISTORY
+            </button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
+                STATISTICS
+            </button>
+        </div>
+
+        <!-- Raids Section -->
+        <div id="section-raids" class="space-y-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-orbitron text-xl text-cyan-400">Available Raids</h2>
+                <div class="flex gap-2">
+                    <button onclick="filterActivities('all')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">All</button>
+                    <button onclick="filterActivities('completed')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Completed</button>
+                    <button onclick="filterActivities('pending')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Pending</button>
+                </div>
+            </div>
+            <div id="raids-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Raids injected here -->
+            </div>
+        </div>
+
+        <!-- Dungeons Section -->
+        <div id="section-dungeons" class="space-y-4 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-orbitron text-xl text-cyan-400">Available Dungeons</h2>
+                <div class="flex gap-2">
+                    <button onclick="filterActivities('all')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">All</button>
+                    <button onclick="filterActivities('completed')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Completed</button>
+                    <button onclick="filterActivities('pending')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Pending</button>
+                </div>
+            </div>
+            <div id="dungeons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dungeons injected here -->
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="section-history" class="hidden">
+            <h2 class="font-orbitron text-xl text-cyan-400 mb-4">Recent Activity</h2>
+            <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 border-b border-white/10">
+                            <tr>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Activity</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Mode</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Fireteam</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Notes</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-white/5">
+                            <!-- History rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="empty-history" class="text-center py-12 text-gray-500 hidden">
+                    <p>No activities recorded yet. Start by logging a raid or dungeon clear!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="section-stats" class="hidden space-y-6">
+            <h2 class="font-orbitron text-xl text-cyan-400">Detailed Statistics</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="font-semibold text-lg mb-4 text-white">Clears by Activity</h3>
+                    <div id="stats-by-activity" class="space-y-3">
+                        <!-- Stats bars injected here -->
+                    </div>
+                </div>
+                
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="font-semibold text-lg mb-4 text-white">Monthly Activity</h3>
+                    <div id="monthly-chart" class="h-64 flex items-end gap-2">
+                        <!-- Monthly bars injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6">
+                <h3 class="font-semibold text-lg mb-4 text-white">Fireteam Members</h3>
+                <div id="fireteam-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Fireteam stats injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Add Clear Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-enter border border-cyan-500/30">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <h3 class="font-orbitron text-2xl font-bold text-white" id="modal-title">Log Clear</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="clear-form" class="p-6 space-y-6">
+                <input type="hidden" id="activity-id">
+                <input type="hidden" id="activity-type">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Date</label>
+                        <input type="date" id="clear-date" required class="input-destiny w-full px-4 py-3 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Time</label>
+                        <input type="time" id="clear-time" class="input-destiny w-full px-4 py-3 rounded-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Difficulty</label>
+                        <select id="clear-difficulty" class="input-destiny w-full px-4 py-3 rounded-lg">
+                            <option value="Normal">Normal</option>
+                            <option value="Master">Master</option>
+                            <option value="Contest">Contest Mode</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Run Type</label>
+                        <select id="clear-type" class="input-destiny w-full px-4 py-3 rounded-lg">
+                            <option value="Standard">Standard</option>
+                            <option value="Flawless">Flawless</option>
+                            <option value="Challenge">Challenge Mode</option>
+                            <option value="Speedrun">Speedrun</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Fireteam Members (3 for Dungeons, 6 for Raids)</label>
+                    <div id="fireteam-inputs" class="space-y-2">
+                        <!-- Dynamic fireteam inputs -->
+                    </div>
+                    <button type="button" onclick="addFireteamSlot()" class="mt-2 text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Member
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Notes</label>
+                    <textarea id="clear-notes" rows="3" class="input-destiny w-full px-4 py-3 rounded-lg resize-none" placeholder="Exotic drops, memorable moments, etc..."></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn-destiny flex-1 py-3 rounded-lg font-bold text-white">
+                        Save Clear
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Destiny 2 Activity Data
+        const activities = {
+            raids: [
+                { id: 'last-wish', name: "Last Wish", location: "Dreaming City", difficulty: "Medium", exotic: "One Thousand Voices", release: "2018", bosses: 4 },
+                { id: 'garden', name: "Garden of Salvation", location: "Moon", difficulty: "Medium", exotic: "Divinity", release: "2019", bosses: 2 },
+                { id: 'dsc', name: "Deep Stone Crypt", location: "Europa", difficulty: "Easy", exotic: "Eyes of Tomorrow", release: "2020", bosses: 3 },
+                { id: 'vog', name: "Vault of Glass", location: "Venus", difficulty: "Easy", exotic: "Vex Mythoclast", release: "2021", bosses: 2 },
+                { id: 'vow', name: "Vow of the Disciple", location: "Savathun's Throne World", difficulty: "Hard", exotic: "Collective Obligation", release: "2022", bosses: 2 },
+                { id: 'kings-fall', name: "King's Fall", location: "Dreadnaught", difficulty: "Hard", exotic: "Touch of Malice", release: "2022", bosses: 5 },
+                { id: 'ron', name: "Root of Nightmares", location: "Neomuna", difficulty: "Easy", exotic: "Conditional Finality", release: "2023", bosses: 2 },
+                { id: 'crota', name: "Crota's End", location: "Moon", difficulty: "Easy", exotic: "Necrochasm", release: "2023", bosses: 2 },
+                { id: 'salvation', name: "Salvation's Edge", location: "The Pale Heart", difficulty: "Hard", exotic: "Euphony", release: "2024", bosses: 5 }
+            ],
+            dungeons: [
+                { id: 'shattered-throne', name: "The Shattered Throne", location: "Dreaming City", difficulty: "Very Easy", exotic: "Wish-Ender", release: "2018", players: 3 },
+                { id: 'pit', name: "Pit of Heresy", location: "Moon", difficulty: "Easy", exotic: "Xenophage", release: "2019", players: 3 },
+                { id: 'prophecy', name: "Prophecy", location: "Unknown Space", difficulty: "Medium", exotic: "None", release: "2020", players: 3 },
+                { id: 'grasp', name: "Grasp of Avarice", location: "Cosmodrome", difficulty: "Easy", exotic: "Gjallarhorn", release: "2021", players: 3 },
+                { id: 'duality', name: "Duality", location: "Moon", difficulty: "Hard", exotic: "Heartshadow", release: "2022", players: 3 },
+                { id: 'spire', name: "Spire of the Watcher", location: "Savathun's Throne World", difficulty: "Medium", exotic: "Hierarchy of Needs", release: "2022", players: 3 },
+                { id: 'ghosts', name: "Ghosts of the Deep", location: "Titan", difficulty: "Hard", exotic: "The Navigator", release: "2023", players: 3 },
+                { id: 'warlord', name: "Warlord's Ruin", location: "EDZ", difficulty: "Hard", exotic: "Buried Bloodline", release: "2023", players: 3 },
+                { id: 'vesper', name: "Vesper's Host", location: "Europa", difficulty: "Medium", exotic: "Ice Breaker", release: "2024", players: 3 },
+                { id: 'sundered', name: "Sundered Doctrine", location: "Savathun's Throne World", difficulty: "Hard", exotic: "Unknown", release: "2025", players: 3 }
+            ]
+        };
+
+        // State Management
+        let clears = JSON.parse(localStorage.getItem('destinyClears')) || [];
+        let currentFilter = 'all';
+        let currentTab = 'raids';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createStarfield();
+            renderActivities();
+            updateStats();
+            document.getElementById('clear-date').valueAsDate = new Date();
+        });
+
+        // Create animated starfield background
+        function createStarfield() {
+            const container = document.getElementById('starfield');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            ['raids', 'dungeons', 'history', 'stats'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const section = document.getElementById(`section-${t}`);
+                
+                if (t === tab) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('bg-white/5');
+                    section.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('bg-white/5');
+                    section.classList.add('hidden');
+                }
+            });
+
+            if (tab === 'stats') renderStats();
+            if (tab === 'history') renderHistory();
+        }
+
+        // Filter Activities
+        function filterActivities(filter) {
+            currentFilter = filter;
+            renderActivities();
+        }
+
+        // Render Activities Grid
+        function renderActivities() {
+            const raidsContainer = document.getElementById('raids-grid');
+            const dungeonsContainer = document.getElementById('dungeons-grid');
+            
+            raidsContainer.innerHTML = '';
+            dungeonsContainer.innerHTML = '';
+
+            // Render Raids
+            activities.raids.forEach(raid => {
+                const clearCount = clears.filter(c => c.activityId === raid.id).length;
+                const isCompleted = clearCount > 0;
+                
+                if (currentFilter === 'completed' && !isCompleted) return;
+                if (currentFilter === 'pending' && isCompleted) return;
+
+                const card = createActivityCard(raid, 'raid', clearCount, isCompleted);
+                raidsContainer.appendChild(card);
+            });
+
+            // Render Dungeons
+            activities.dungeons.forEach(dungeon => {
+                const clearCount = clears.filter(c => c.activityId === dungeon.id).length;
+                const isCompleted = clearCount > 0;
+                
+                if (currentFilter === 'completed' && !isCompleted) return;
+                if (currentFilter === 'pending' && isCompleted) return;
+
+                const card = createActivityCard(dungeon, 'dungeon', clearCount, isCompleted);
+                dungeonsContainer.appendChild(card);
+            });
+        }
+
+        function createActivityCard(activity, type, clearCount, isCompleted) {
+            const div = document.createElement('div');
+            div.className = `activity-card glass-panel rounded-xl p-6 relative overflow-hidden ${isCompleted ? 'completed' : ''}`;
+            
+            const difficultyClass = activity.difficulty === 'Easy' || activity.difficulty === 'Very Easy' ? 'difficulty-easy' : 
+                                   activity.difficulty === 'Medium' ? 'difficulty-medium' : 'difficulty-hard';
+            
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-orbitron text-lg font-bold text-white mb-1">${activity.name}</h3>
+                        <p class="text-sm text-gray-400">${activity.location}</p>
+                    </div>
+                    <div class="status-indicator"></div>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Difficulty:</span>
+                        <span class="${difficultyClass} font-semibold">${activity.difficulty}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Exotic:</span>
+                        <span class="text-yellow-400">${activity.exotic}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Released:</span>
+                        <span class="text-gray-300">${activity.release}</span>
+                    </div>
+                </div>
+
+                ${type === 'raid' ? `
+                <div class="flex gap-2 mb-4">
+                    ${Array(activity.bosses).fill(0).map((_, i) => `
+                        <div class="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
+                            <div class="h-full bg-cyan-500/50 w-full"></div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+
+                <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                    <div class="text-2xl font-bold text-white font-orbitron">${clearCount}</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Clears</div>
+                    <button onclick="openModal('${activity.id}', '${type}')" 
+                            class="btn-destiny px-4 py-2 rounded-lg text-sm font-bold text-white">
+                        ${isCompleted ? 'Add Clear' : 'Log First Clear'}
+                    </button>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Modal Functions
+        function openModal(activityId, type) {
+            const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === activityId);
+            document.getElementById('modal-title').textContent = `Log ${activity.name} Clear`;
+            document.getElementById('activity-id').value = activityId;
+            document.getElementById('activity-type').value = type;
+            
+            // Reset form
+            document.getElementById('clear-form').reset();
+            document.getElementById('clear-date').valueAsDate = new Date();
+            
+            // Setup fireteam slots
+            const container = document.getElementById('fireteam-inputs');
+            container.innerHTML = '';
+            const slots = type === 'raid' ? 5 : 2; // Plus user = 6 or 3 total
+            
+            for (let i = 0; i < slots; i++) {
+                addFireteamInput(container, i + 1);
+            }
+            
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function addFireteamInput(container, number) {
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <input type="text" placeholder="Fireteam Member ${number}" 
+                       class="fireteam-member input-destiny flex-1 px-4 py-2 rounded-lg text-sm">
+                <select class="input-destiny px-3 py-2 rounded-lg text-sm w-32">
+                    <option value="Titan">Titan</option>
+                    <option value="Hunter">Hunter</option>
+                    <option value="Warlock">Warlock</option>
+                </select>
+            `;
+            container.appendChild(div);
+        }
+
+        function addFireteamSlot() {
+            const container = document.getElementById('fireteam-inputs');
+            const currentSlots = container.children.length;
+            addFireteamInput(container, currentSlots + 1);
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Form Submission
+        document.getElementById('clear-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const fireteam = [];
+            document.querySelectorAll('.fireteam-member').forEach((input, index) => {
+                if (input.value.trim()) {
+                    const classSelect = input.nextElementSibling;
+                    fireteam.push({
+                        name: input.value.trim(),
+                        class: classSelect.value
+                    });
+                }
+            });
+
+            const clear = {
+                id: Date.now(),
+                activityId: document.getElementById('activity-id').value,
+                type: document.getElementById('activity-type').value,
+                date: document.getElementById('clear-date').value,
+                time: document.getElementById('clear-time').value || '00:00',
+                difficulty: document.getElementById('clear-difficulty').value,
+                runType: document.getElementById('clear-type').value,
+                fireteam: fireteam,
+                notes: document.getElementById('clear-notes').value,
+                timestamp: new Date().toISOString()
+            };
+
+            clears.push(clear);
+            localStorage.setItem('destinyClears', JSON.stringify(clears));
+            
+            closeModal();
+            updateStats();
+            renderActivities();
+            
+            // Show success feedback
+            showNotification('Clear recorded successfully!');
+        });
+
+        function showNotification(message) {
+            const div = document.createElement('div');
+            div.className = 'fixed bottom-4 right-4 bg-green-500/90 text-white px-6 py-3 rounded-lg shadow-lg z-50 font-semibold';
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // Update Statistics
+        function updateStats() {
+            const raidClears = clears.filter(c => c.type === 'raid').length;
+            const dungeonClears = clears.filter(c => c.type === 'dungeon').length;
+            const flawless = clears.filter(c => c.runType === 'Flawless').length;
+            const contest = clears.filter(c => c.difficulty === 'Contest').length;
+            
+            document.getElementById('raidCount').textContent = raidClears;
+            document.getElementById('dungeonCount').textContent = dungeonClears;
+            document.getElementById('flawlessCount').textContent = flawless;
+            document.getElementById('contestCount').textContent = contest;
+            document.getElementById('totalClears').textContent = clears.length;
+        }
+
+        // Render History
+        function renderHistory() {
+            const tbody = document.getElementById('history-table-body');
+            const emptyState = document.getElementById('empty-history');
+            
+            tbody.innerHTML = '';
+            
+            if (clears.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            const sortedClears = [...clears].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            sortedClears.forEach(clear => {
+                const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === clear.activityId);
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-white/5 transition-colors';
+                
+                const runTypeColor = clear.runType === 'Flawless' ? 'text-yellow-400' : 
+                                   clear.runType === 'Contest' ? 'text-purple-400' : 'text-gray-300';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${clear.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">${activity?.name || 'Unknown'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="capitalize ${clear.type === 'raid' ? 'text-cyan-400' : 'text-purple-400'}">${clear.type}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="${runTypeColor}">${clear.runType}</span>
+                        ${clear.difficulty !== 'Normal' ? `<span class="text-xs text-gray-500 ml-1">(${clear.difficulty})</span>` : ''}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-400">
+                        ${clear.fireteam.map(m => `<span class="inline-block mr-2">${m.name} <span class="text-xs opacity-60">(${m.class})</span></span>`).join('') || 'Solo'}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-400 max-w-xs truncate">${clear.notes || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button onclick="deleteClear(${clear.id})" class="text-red-400 hover:text-red-300 transition-colors">
+                            Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function deleteClear(id) {
+            if (confirm('Are you sure you want to delete this clear?')) {
+                clears = clears.filter(c => c.id !== id);
+                localStorage.setItem('destinyClears', JSON.stringify(clears));
+                updateStats();
+                renderHistory();
+                renderActivities();
+            }
+        }
+
+        // Render Statistics
+        function renderStats() {
+            // By Activity
+            const activityStats = {};
+            clears.forEach(c => {
+                const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === c.activityId);
+                if (activity) {
+                    activityStats[activity.name] = (activityStats[activity.name] || 0) + 1;
+                }
+            });
+            
+            const statsContainer = document.getElementById('stats-by-activity');
+            statsContainer.innerHTML = '';
+            
+            Object.entries(activityStats)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([name, count]) => {
+                    const max = Math.max(...Object.values(activityStats));
+                    const percentage = (count / max) * 100;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-3';
+                    div.innerHTML = `
+                        <div class="w-32 text-sm text-gray-300 truncate">${name}</div>
+                        <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="w-8 text-right text-sm font-bold text-white">${count}</div>
+                    `;
+                    statsContainer.appendChild(div);
+                });
+
+            // Monthly Chart
+            const monthlyData = {};
+            clears.forEach(c => {
+                const month = c.date.substring(0, 7); // YYYY-MM
+                monthlyData[month] = (monthlyData[month] || 0) + 1;
+            });
+            
+            const chartContainer = document.getElementById('monthly-chart');
+            chartContainer.innerHTML = '';
+            
+            const months = Object.keys(monthlyData).sort().slice(-12); // Last 12 months
+            const maxMonth = Math.max(...Object.values(monthlyData), 1);
+            
+            months.forEach(month => {
+                const count = monthlyData[month];
+                const height = (count / maxMonth) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'flex-1 bg-cyan-500/30 hover:bg-cyan-500/50 transition-all rounded-t relative group';
+                bar.style.height = `${height}%`;
+                bar.innerHTML = `
+                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                        ${month}: ${count} clears
+                    </div>
+                `;
+                chartContainer.appendChild(bar);
+            });
+
+            // Fireteam Stats
+            const fireteamStats = {};
+            clears.forEach(c => {
+                c.fireteam.forEach(m => {
+                    fireteamStats[m.name] = (fireteamStats[m.name] || 0) + 1;
+                });
+            });
+            
+            const fireteamContainer = document.getElementById('fireteam-stats');
+            fireteamContainer.innerHTML = '';
+            
+            Object.entries(fireteamStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .forEach(([name, count]) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white/5 rounded-lg p-3 text-center border border-white/5';
+                    div.innerHTML = `
+                        <div class="font-semibold text-white truncate">${name}</div>
+                        <div class="text-2xl font-bold text-cyan-400 mt-1">${count}</div>
+                        <div class="text-xs text-gray-500">activities</div>
+                    `;
+                    fireteamContainer.appendChild(div);
+                });
+        }
+
+        // Data Export/Import
+        function exportData() {
+            const dataStr = JSON.stringify(clears, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `destiny-2-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        clears = imported;
+                        localStorage.setItem('destinyClears', JSON.stringify(clears));
+                        updateStats();
+                        renderActivities();
+                        showNotification('Data imported successfully!');
+                    } else {
+                        alert('Invalid file format');
+                    }
+                } catch (err) {
+                    alert('Error reading file');
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
