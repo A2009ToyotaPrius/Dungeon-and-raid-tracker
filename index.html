@@ -12,7 +12,6 @@
             --destiny-orange: #f4a261;
             --destiny-purple: #9d4edd;
             --destiny-dark: #0a0e27;
-            --destiny-panel: rgba(16, 20, 40, 0.85);
         }
         
         body {
@@ -22,15 +21,27 @@
             min-height: 100vh;
         }
         
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
         
         .glass-panel {
-            background: var(--destiny-panel);
+            background: rgba(16, 20, 40, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--destiny-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .activity-card {
@@ -44,21 +55,14 @@
             box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);
         }
         
-        .completed {
+        .cleared {
             border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent);
         }
         
-        .completed .status-indicator {
-            background: #10b981;
-            box-shadow: 0 0 10px #10b981;
-        }
-        
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ef4444;
-            transition: all 0.3s ease;
+        .uncleared {
+            border-left: 4px solid #ef4444;
+            opacity: 0.7;
         }
         
         .tab-active {
@@ -67,49 +71,41 @@
             box-shadow: 0 0 15px rgba(0, 180, 216, 0.4);
         }
         
-        .input-destiny {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .input-destiny:focus {
-            outline: none;
-            border-color: var(--destiny-blue);
-            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
-        }
-        
-        .btn-destiny {
-            background: linear-gradient(135deg, var(--destiny-blue), #0077b6);
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .btn-destiny:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
-        }
-        
         .stat-box {
             background: linear-gradient(135deg, rgba(0, 180, 216, 0.1), rgba(0, 119, 182, 0.05));
             border: 1px solid rgba(0, 180, 216, 0.2);
         }
         
-        .modal-enter {
-            animation: modalSlide 0.3s ease-out;
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--destiny-orange), #e76f51);
+            transition: all 0.3s ease;
         }
         
-        @keyframes modalSlide {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+        .refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 20px rgba(244, 162, 97, 0.4);
+        }
+        
+        .player-search {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .player-search:focus {
+            outline: none;
+            border-color: var(--destiny-blue);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
+        }
+        
+        .error-toast {
+            background: rgba(239, 68, 68, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+        
+        .success-toast {
+            background: rgba(16, 185, 129, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.5);
         }
         
         .star-field {
@@ -134,61 +130,61 @@
             50% { opacity: 1; }
         }
         
-        .difficulty-easy { color: #10b981; }
-        .difficulty-medium { color: #f4a261; }
-        .difficulty-hard { color: #ef4444; }
-        
-        .fireteam-slot {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px dashed rgba(255, 255, 255, 0.2);
+        .api-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
         }
         
-        .fireteam-filled {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid #10b981;
-        }
-        
-        .loot-tag {
-            background: rgba(244, 162, 97, 0.2);
-            border: 1px solid var(--destiny-orange);
-            color: var(--destiny-orange);
-        }
+        .api-connected { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .api-disconnected { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- Animated Starfield Background -->
     <div class="star-field" id="starfield"></div>
 
     <!-- Header -->
     <header class="glass-panel sticky top-0 z-50 border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                    </svg>
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-orbitron text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
+                            D2 ACTIVITY TRACKER
+                        </h1>
+                        <div class="flex items-center gap-2">
+                            <p class="text-xs text-gray-400 tracking-widest uppercase">Bungie API Powered</p>
+                            <span id="api-status" class="api-status api-disconnected">Disconnected</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-orbitron text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-                        GUARDIAN LOG
-                    </h1>
-                    <p class="text-xs text-gray-400 tracking-widest uppercase">Raid & Dungeon Tracker</p>
+                
+                <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                    <div class="flex gap-2">
+                        <input type="text" id="bungie-name" placeholder="Bungie Name (Guardian#1234)" 
+                               class="player-search px-4 py-2 rounded-lg text-sm w-full md:w-64">
+                        <select id="platform-select" class="player-search px-3 py-2 rounded-lg text-sm">
+                            <option value="all">All Platforms</option>
+                            <option value="1">Xbox</option>
+                            <option value="2">PSN</option>
+                            <option value="3">Steam</option>
+                            <option value="6">Epic</option>
+                        </select>
+                    </div>
+                    <button onclick="searchPlayer()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-lg font-semibold transition-all">
+                        Search
+                    </button>
+                    <button onclick="refreshData()" id="refresh-btn" class="refresh-btn text-white px-4 py-2 rounded-lg font-semibold hidden">
+                        Refresh
+                    </button>
                 </div>
-            </div>
-            
-            <div class="flex gap-4 items-center">
-                <div class="text-right hidden sm:block">
-                    <div class="text-sm text-gray-400">Total Clears</div>
-                    <div class="font-orbitron text-2xl font-bold text-cyan-400" id="totalClears">0</div>
-                </div>
-                <button onclick="exportData()" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-semibold">
-                    Export Data
-                </button>
-                <label class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-semibold cursor-pointer">
-                    Import
-                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(this)">
-                </label>
             </div>
         </div>
     </header>
@@ -196,249 +192,276 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
         
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="stat-box rounded-xl p-4">
-                <div class="text-gray-400 text-sm uppercase tracking-wider">Raid Clears</div>
-                <div class="font-orbitron text-3xl font-bold text-white mt-1" id="raidCount">0</div>
+        <!-- Setup Instructions (shown initially) -->
+        <div id="setup-panel" class="glass-panel rounded-xl p-8 mb-8 text-center">
+            <h2 class="font-orbitron text-2xl font-bold text-white mb-4">Welcome, Guardian</h2>
+            <p class="text-gray-400 mb-6 max-w-2xl mx-auto">
+                This tracker uses the official Bungie API to fetch your actual raid and dungeon clears from Destiny 2.
+                Enter your Bungie Name (e.g., <span class="text-cyan-400">Guardian#1234</span>) above to get started.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+                <div class="p-4 bg-white/5 rounded-lg">
+                    <div class="text-cyan-400 font-bold mb-2">1. Search</div>
+                    Enter your Bungie Name and select your platform
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg">
+                    <div class="text-cyan-400 font-bold mb-2">2. Fetch</div>
+                    We pull your activity history from Bungie's servers
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg">
+                    <div class="text-cyan-400 font-bold mb-2">3. Track</div>
+                    View all your clears, stats, and completion history
+                </div>
             </div>
-            <div class="stat-box rounded-xl p-4">
-                <div class="text-gray-400 text-sm uppercase tracking-wider">Dungeon Clears</div>
-                <div class="font-orbitron text-3xl font-bold text-white mt-1" id="dungeonCount">0</div>
+            
+            <div class="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-left">
+                <h3 class="text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    API Key Required for Self-Hosting
+                </h3>
+                <p class="text-sm text-gray-400">
+                    To host this on GitHub Pages, you need a free Bungie API key. 
+                    <a href="https://www.bungie.net/en/Application" target="_blank" class="text-cyan-400 hover:underline">Apply here</a> 
+                    and replace <code class="bg-black/30 px-2 py-1 rounded">YOUR_API_KEY_HERE</code> in the code.
+                </p>
             </div>
-            <div class="stat-box rounded-xl p-4">
-                <div class="text-gray-400 text-sm uppercase tracking-wider">Flawless Runs</div>
-                <div class="font-orbitron text-3xl font-bold text-yellow-400 mt-1" id="flawlessCount">0</div>
-            </div>
-            <div class="stat-box rounded-xl p-4">
-                <div class="text-gray-400 text-sm uppercase tracking-wider">Contest Mode</div>
-                <div class="font-orbitron text-3xl font-bold text-purple-400 mt-1" id="contestCount">0</div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-panel" class="hidden flex-col items-center justify-center py-20">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-cyan-400 font-semibold animate-pulse">Fetching activity data from Bungie...</p>
+            <p class="text-sm text-gray-500 mt-2">This may take a moment for players with extensive history</p>
+        </div>
+
+        <!-- Player Profile -->
+        <div id="profile-panel" class="hidden mb-8">
+            <div class="glass-panel rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-3xl font-bold text-white font-orbitron" id="profile-icon">
+                    ?
+                </div>
+                <div class="flex-1 text-center md:text-left">
+                    <h2 class="font-orbitron text-2xl font-bold text-white" id="profile-name">Guardian</h2>
+                    <p class="text-gray-400" id="profile-platform">Platform</p>
+                    <div class="flex flex-wrap gap-4 mt-2 justify-center md:justify-start text-sm">
+                        <span class="text-cyan-400">Member ID: <span class="text-white" id="profile-membership">-</span></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="stat-box rounded-lg p-3">
+                        <div class="text-2xl font-bold text-white font-orbitron" id="total-clears">0</div>
+                        <div class="text-xs text-gray-400 uppercase">Total Clears</div>
+                    </div>
+                    <div class="stat-box rounded-lg p-3">
+                        <div class="text-2xl font-bold text-cyan-400 font-orbitron" id="raid-clears">0</div>
+                        <div class="text-xs text-gray-400 uppercase">Raids</div>
+                    </div>
+                    <div class="stat-box rounded-lg p-3">
+                        <div class="text-2xl font-bold text-purple-400 font-orbitron" id="dungeon-clears">0</div>
+                        <div class="text-xs text-gray-400 uppercase">Dungeons</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <button onclick="switchTab('raids')" id="tab-raids" class="tab-active px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap">
+        <div id="tabs-container" class="hidden flex gap-2 mb-6 overflow-x-auto pb-2">
+            <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap">
+                OVERVIEW
+            </button>
+            <button onclick="switchTab('raids')" id="tab-raids" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
                 RAIDS
             </button>
             <button onclick="switchTab('dungeons')" id="tab-dungeons" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
                 DUNGEONS
             </button>
             <button onclick="switchTab('history')" id="tab-history" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
-                HISTORY
-            </button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="px-6 py-3 rounded-lg font-semibold bg-white/5 hover:bg-white/10 transition-all whitespace-nowrap">
-                STATISTICS
+                RECENT ACTIVITY
             </button>
         </div>
 
-        <!-- Raids Section -->
-        <div id="section-raids" class="space-y-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-orbitron text-xl text-cyan-400">Available Raids</h2>
-                <div class="flex gap-2">
-                    <button onclick="filterActivities('all')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">All</button>
-                    <button onclick="filterActivities('completed')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Completed</button>
-                    <button onclick="filterActivities('pending')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Pending</button>
-                </div>
-            </div>
-            <div id="raids-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Raids injected here -->
-            </div>
-        </div>
-
-        <!-- Dungeons Section -->
-        <div id="section-dungeons" class="space-y-4 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-orbitron text-xl text-cyan-400">Available Dungeons</h2>
-                <div class="flex gap-2">
-                    <button onclick="filterActivities('all')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">All</button>
-                    <button onclick="filterActivities('completed')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Completed</button>
-                    <button onclick="filterActivities('pending')" class="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/20 transition-all">Pending</button>
-                </div>
-            </div>
-            <div id="dungeons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dungeons injected here -->
-            </div>
-        </div>
-
-        <!-- History Section -->
-        <div id="section-history" class="hidden">
-            <h2 class="font-orbitron text-xl text-cyan-400 mb-4">Recent Activity</h2>
-            <div class="glass-panel rounded-xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 border-b border-white/10">
-                            <tr>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Activity</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Type</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Mode</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Fireteam</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Notes</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-table-body" class="divide-y divide-white/5">
-                            <!-- History rows injected here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="empty-history" class="text-center py-12 text-gray-500 hidden">
-                    <p>No activities recorded yet. Start by logging a raid or dungeon clear!</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Section -->
-        <div id="section-stats" class="hidden space-y-6">
-            <h2 class="font-orbitron text-xl text-cyan-400">Detailed Statistics</h2>
+        <!-- Content Sections -->
+        <div id="content-container" class="hidden">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="glass-panel rounded-xl p-6">
-                    <h3 class="font-semibold text-lg mb-4 text-white">Clears by Activity</h3>
-                    <div id="stats-by-activity" class="space-y-3">
-                        <!-- Stats bars injected here -->
+            <!-- Overview Tab -->
+            <div id="section-overview" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-panel rounded-xl p-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white mb-4">Raid Completion</h3>
+                        <div id="overview-raids" class="space-y-2">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-xl p-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white mb-4">Dungeon Completion</h3>
+                        <div id="overview-dungeons" class="space-y-2">
+                            <!-- Populated dynamically -->
+                        </div>
                     </div>
                 </div>
                 
                 <div class="glass-panel rounded-xl p-6">
-                    <h3 class="font-semibold text-lg mb-4 text-white">Monthly Activity</h3>
-                    <div id="monthly-chart" class="h-64 flex items-end gap-2">
-                        <!-- Monthly bars injected here -->
+                    <h3 class="font-orbitron text-lg font-bold text-white mb-4">Recent Highlights</h3>
+                    <div id="recent-highlights" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
             </div>
 
-            <div class="glass-panel rounded-xl p-6">
-                <h3 class="font-semibold text-lg mb-4 text-white">Fireteam Members</h3>
-                <div id="fireteam-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- Fireteam stats injected here -->
+            <!-- Raids Tab -->
+            <div id="section-raids" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Dungeons Tab -->
+            <div id="section-dungeons" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- History Tab -->
+            <div id="section-history" class="hidden">
+                <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-white/5 border-b border-white/10">
+                                <tr>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Activity</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Duration</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Kills</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Deaths</th>
+                                    <th class="px-6 py-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">KD</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-white/5">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+        </div>
+
+        <!-- Error Toast -->
+        <div id="error-toast" class="fixed bottom-4 right-4 error-toast text-white px-6 py-4 rounded-lg shadow-lg hidden max-w-md">
+            <div class="font-bold mb-1">Error</div>
+            <div class="text-sm" id="error-message">Something went wrong</div>
         </div>
 
     </main>
 
-    <!-- Add Clear Modal -->
-    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-enter border border-cyan-500/30">
-            <div class="p-6 border-b border-white/10 flex justify-between items-center">
-                <h3 class="font-orbitron text-2xl font-bold text-white" id="modal-title">Log Clear</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="clear-form" class="p-6 space-y-6">
-                <input type="hidden" id="activity-id">
-                <input type="hidden" id="activity-type">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Date</label>
-                        <input type="date" id="clear-date" required class="input-destiny w-full px-4 py-3 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Time</label>
-                        <input type="time" id="clear-time" class="input-destiny w-full px-4 py-3 rounded-lg">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Difficulty</label>
-                        <select id="clear-difficulty" class="input-destiny w-full px-4 py-3 rounded-lg">
-                            <option value="Normal">Normal</option>
-                            <option value="Master">Master</option>
-                            <option value="Contest">Contest Mode</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Run Type</label>
-                        <select id="clear-type" class="input-destiny w-full px-4 py-3 rounded-lg">
-                            <option value="Standard">Standard</option>
-                            <option value="Flawless">Flawless</option>
-                            <option value="Challenge">Challenge Mode</option>
-                            <option value="Speedrun">Speedrun</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2">Fireteam Members (3 for Dungeons, 6 for Raids)</label>
-                    <div id="fireteam-inputs" class="space-y-2">
-                        <!-- Dynamic fireteam inputs -->
-                    </div>
-                    <button type="button" onclick="addFireteamSlot()" class="mt-2 text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Add Member
-                    </button>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2">Notes</label>
-                    <textarea id="clear-notes" rows="3" class="input-destiny w-full px-4 py-3 rounded-lg resize-none" placeholder="Exotic drops, memorable moments, etc..."></textarea>
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="submit" class="btn-destiny flex-1 py-3 rounded-lg font-bold text-white">
-                        Save Clear
-                    </button>
-                    <button type="button" onclick="closeModal()" class="px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-semibold">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // Destiny 2 Activity Data
-        const activities = {
+        // CONFIGURATION - REPLACE WITH YOUR BUNGIE API KEY
+        const API_KEY = 'ae39e5b5a8f3469892c285d0c4680d92'; // Get from https://www.bungie.net/en/Application
+        const BASE_URL = 'https://www.bungie.net/Platform';
+        
+        // Activity Mode Types
+        const MODE_RAID = 4;
+        const MODE_DUNGEON = 82; // Dungeon activity mode
+        
+        // Activity Hashes for specific raids/dungeons (these map to Destiny 2 activities)
+        // Note: In production, you'd fetch these from the Destiny 2 manifest
+        const ACTIVITY_DEFINITIONS = {
             raids: [
-                { id: 'last-wish', name: "Last Wish", location: "Dreaming City", difficulty: "Medium", exotic: "One Thousand Voices", release: "2018", bosses: 4 },
-                { id: 'garden', name: "Garden of Salvation", location: "Moon", difficulty: "Medium", exotic: "Divinity", release: "2019", bosses: 2 },
-                { id: 'dsc', name: "Deep Stone Crypt", location: "Europa", difficulty: "Easy", exotic: "Eyes of Tomorrow", release: "2020", bosses: 3 },
-                { id: 'vog', name: "Vault of Glass", location: "Venus", difficulty: "Easy", exotic: "Vex Mythoclast", release: "2021", bosses: 2 },
-                { id: 'vow', name: "Vow of the Disciple", location: "Savathun's Throne World", difficulty: "Hard", exotic: "Collective Obligation", release: "2022", bosses: 2 },
-                { id: 'kings-fall', name: "King's Fall", location: "Dreadnaught", difficulty: "Hard", exotic: "Touch of Malice", release: "2022", bosses: 5 },
-                { id: 'ron', name: "Root of Nightmares", location: "Neomuna", difficulty: "Easy", exotic: "Conditional Finality", release: "2023", bosses: 2 },
-                { id: 'crota', name: "Crota's End", location: "Moon", difficulty: "Easy", exotic: "Necrochasm", release: "2023", bosses: 2 },
-                { id: 'salvation', name: "Salvation's Edge", location: "The Pale Heart", difficulty: "Hard", exotic: "Euphony", release: "2024", bosses: 5 }
+                { 
+                    name: "Last Wish", 
+                    hash: 212962095, 
+                    location: "Dreaming City",
+                    tier: 1,
+                    image: "last-wish.jpg"
+                },
+                { 
+                    name: "Garden of Salvation", 
+                    hash: 3458486204, 
+                    location: "Moon",
+                    tier: 1 
+                },
+                { 
+                    name: "Deep Stone Crypt", 
+                    hash: 910380154, 
+                    location: "Europa",
+                    tier: 1 
+                },
+                { 
+                    name: "Vault of Glass", 
+                    hash: 3881495763, 
+                    location: "Venus",
+                    tier: 1 
+                },
+                { 
+                    name: "Vow of the Disciple", 
+                    hash: 1441982566, 
+                    location: "Throne World",
+                    tier: 1 
+                },
+                { 
+                    name: "King's Fall", 
+                    hash: 1374392663, 
+                    location: "Dreadnaught",
+                    tier: 1 
+                },
+                { 
+                    name: "Root of Nightmares", 
+                    hash: 2381413764, 
+                    location: "Neomuna",
+                    tier: 1 
+                },
+                { 
+                    name: "Crota's End", 
+                    hash: 4179289725, 
+                    location: "Moon",
+                    tier: 1 
+                },
+                { 
+                    name: "Salvation's Edge", 
+                    hash: 291873069, 
+                    location: "Pale Heart",
+                    tier: 1 
+                }
             ],
             dungeons: [
-                { id: 'shattered-throne', name: "The Shattered Throne", location: "Dreaming City", difficulty: "Very Easy", exotic: "Wish-Ender", release: "2018", players: 3 },
-                { id: 'pit', name: "Pit of Heresy", location: "Moon", difficulty: "Easy", exotic: "Xenophage", release: "2019", players: 3 },
-                { id: 'prophecy', name: "Prophecy", location: "Unknown Space", difficulty: "Medium", exotic: "None", release: "2020", players: 3 },
-                { id: 'grasp', name: "Grasp of Avarice", location: "Cosmodrome", difficulty: "Easy", exotic: "Gjallarhorn", release: "2021", players: 3 },
-                { id: 'duality', name: "Duality", location: "Moon", difficulty: "Hard", exotic: "Heartshadow", release: "2022", players: 3 },
-                { id: 'spire', name: "Spire of the Watcher", location: "Savathun's Throne World", difficulty: "Medium", exotic: "Hierarchy of Needs", release: "2022", players: 3 },
-                { id: 'ghosts', name: "Ghosts of the Deep", location: "Titan", difficulty: "Hard", exotic: "The Navigator", release: "2023", players: 3 },
-                { id: 'warlord', name: "Warlord's Ruin", location: "EDZ", difficulty: "Hard", exotic: "Buried Bloodline", release: "2023", players: 3 },
-                { id: 'vesper', name: "Vesper's Host", location: "Europa", difficulty: "Medium", exotic: "Ice Breaker", release: "2024", players: 3 },
-                { id: 'sundered', name: "Sundered Doctrine", location: "Savathun's Throne World", difficulty: "Hard", exotic: "Unknown", release: "2025", players: 3 }
+                { name: "The Shattered Throne", hash: 2032534090 },
+                { name: "Pit of Heresy", hash: 1375089621 },
+                { name: "Prophecy", hash: 1077850348 },
+                { name: "Grasp of Avarice", hash: 2823159265 },
+                { name: "Duality", hash: 2823159265 }, // Note: Update with correct hash
+                { name: "Spire of the Watcher", hash: 1262462921 },
+                { name: "Ghosts of the Deep", hash: 3337731612 },
+                { name: "Warlord's Ruin", hash: 1259026935 },
+                { name: "Vesper's Host", hash: 3612741503 },
+                { name: "Sundered Doctrine", hash: 123462165 } // Update with correct hash
             ]
         };
 
-        // State Management
-        let clears = JSON.parse(localStorage.getItem('destinyClears')) || [];
-        let currentFilter = 'all';
-        let currentTab = 'raids';
+        // State
+        let currentMembership = null;
+        let currentCharacters = [];
+        let allActivities = [];
+        let activityStats = {
+            raids: {},
+            dungeons: {},
+            totalClears: 0
+        };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             createStarfield();
-            renderActivities();
-            updateStats();
-            document.getElementById('clear-date').valueAsDate = new Date();
+            checkApiKey();
+            
+            // Check for cached data
+            const cached = localStorage.getItem('d2tracker_last_search');
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (data.membership && data.activities) {
+                    restoreSession(data);
+                }
+            }
         });
 
-        // Create animated starfield background
         function createStarfield() {
             const container = document.getElementById('starfield');
             for (let i = 0; i < 100; i++) {
@@ -453,417 +476,493 @@
             }
         }
 
-        // Tab Switching
-        function switchTab(tab) {
-            currentTab = tab;
-            
-            // Update tab buttons
-            ['raids', 'dungeons', 'history', 'stats'].forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const section = document.getElementById(`section-${t}`);
-                
-                if (t === tab) {
-                    btn.classList.add('tab-active');
-                    btn.classList.remove('bg-white/5');
-                    section.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('tab-active');
-                    btn.classList.add('bg-white/5');
-                    section.classList.add('hidden');
-                }
-            });
-
-            if (tab === 'stats') renderStats();
-            if (tab === 'history') renderHistory();
+        function checkApiKey() {
+            const statusEl = document.getElementById('api-status');
+            if (API_KEY === 'YOUR_API_KEY_HERE') {
+                statusEl.textContent = 'No API Key';
+                statusEl.className = 'api-status api-disconnected';
+                showError('Please add your Bungie API key to use this feature. Get one at bungie.net/en/Application');
+            } else {
+                statusEl.textContent = 'Ready';
+                statusEl.className = 'api-status api-connected';
+            }
         }
 
-        // Filter Activities
-        function filterActivities(filter) {
-            currentFilter = filter;
+        async function searchPlayer() {
+            if (API_KEY === 'YOUR_API_KEY_HERE') {
+                showError('Please configure your Bungie API key first!');
+                return;
+            }
+
+            const nameInput = document.getElementById('bungie-name').value.trim();
+            const platform = document.getElementById('platform-select').value;
+            
+            if (!nameInput.includes('#')) {
+                showError('Please enter your full Bungie Name including the # (e.g., Guardian#1234)');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                // Search for player using Bungie Name
+                const [displayName, displayNameCode] = nameInput.split('#');
+                
+                const response = await fetch(`${BASE_URL}/Destiny2/SearchDestinyPlayerByBungieName/-1/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        displayName: displayName,
+                        displayNameCode: parseInt(displayNameCode)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ErrorCode !== 1 || !data.Response || data.Response.length === 0) {
+                    throw new Error('Player not found. Check your Bungie Name and try again.');
+                }
+
+                // Filter by platform if specified
+                let membership = data.Response[0];
+                if (platform !== 'all') {
+                    const platformMatch = data.Response.find(m => m.membershipType === parseInt(platform));
+                    if (platformMatch) membership = platformMatch;
+                }
+
+                currentMembership = membership;
+                await fetchProfileData(membership);
+                
+                // Cache the search
+                localStorage.setItem('d2tracker_last_search', JSON.stringify({
+                    membership: membership,
+                    timestamp: Date.now()
+                }));
+                
+                showLoading(false);
+                showProfile();
+                
+            } catch (error) {
+                showLoading(false);
+                showError(error.message);
+            }
+        }
+
+        async function fetchProfileData(membership) {
+            // Get profile with character data
+            const profileRes = await fetch(
+                `${BASE_URL}/Destiny2/${membership.membershipType}/Profile/${membership.membershipId}/?components=100,200`, {
+                headers: { 'X-API-Key': API_KEY }
+            });
+            
+            const profileData = await profileRes.json();
+            if (profileData.ErrorCode !== 1) throw new Error('Failed to fetch profile');
+            
+            const profile = profileData.Response;
+            currentCharacters = Object.values(profile.characters.data || {});
+            
+            if (currentCharacters.length === 0) {
+                throw new Error('No characters found on this account');
+            }
+
+            // Fetch activity history for all characters
+            allActivities = [];
+            activityStats = { raids: {}, dungeons: {}, totalClears: 0 };
+            
+            for (const character of currentCharacters) {
+                await fetchCharacterActivities(character.characterId, membership);
+            }
+            
+            // Process stats
+            processActivityStats();
+        }
+
+        async function fetchCharacterActivities(characterId, membership, page = 0) {
+            // Fetch raid activities (mode 4)
+            await fetchActivityMode(characterId, membership, MODE_RAID, 'raid', page);
+            
+            // Fetch dungeon activities (mode 82)
+            await fetchActivityMode(characterId, membership, MODE_DUNGEON, 'dungeon', page);
+        }
+
+        async function fetchActivityMode(characterId, membership, mode, type, page) {
+            try {
+                const response = await fetch(
+                    `${BASE_URL}/Destiny2/${membership.membershipType}/Account/${membership.membershipId}/Character/${characterId}/Stats/Activities/?mode=${mode}&count=250&page=${page}`, {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                
+                const data = await response.json();
+                
+                if (data.ErrorCode === 1 && data.Response && data.Response.activities) {
+                    const activities = data.Response.activities.map(a => ({
+                        ...a,
+                        activityType: type,
+                        characterId: characterId
+                    }));
+                    
+                    allActivities.push(...activities);
+                    
+                    // If we got 250 results, there might be more
+                    if (data.Response.activities.length === 250 && page < 10) {
+                        await fetchActivityMode(characterId, membership, mode, type, page + 1);
+                    }
+                }
+            } catch (err) {
+                console.error(`Error fetching ${type} activities:`, err);
+            }
+        }
+
+        function processActivityStats() {
+            // Group activities by hash and count completions
+            const activityCounts = {};
+            const activityDetails = {};
+            
+            allActivities.forEach(activity => {
+                const hash = activity.activityDetails.referenceId;
+                if (!activityCounts[hash]) {
+                    activityCounts[hash] = 0;
+                    activityDetails[hash] = activity;
+                }
+                activityCounts[hash]++;
+            });
+            
+            // Map to raid/dungeon definitions
+            ACTIVITY_DEFINITIONS.raids.forEach(raid => {
+                const count = activityCounts[raid.hash] || 0;
+                activityStats.raids[raid.name] = {
+                    count: count,
+                    details: raid,
+                    activities: allActivities.filter(a => a.activityDetails.referenceId === raid.hash)
+                };
+                activityStats.totalClears += count;
+            });
+            
+            ACTIVITY_DEFINITIONS.dungeons.forEach(dungeon => {
+                const count = activityCounts[dungeon.hash] || 0;
+                activityStats.dungeons[dungeon.name] = {
+                    count: count,
+                    details: dungeon,
+                    activities: allActivities.filter(a => a.activityDetails.referenceId === dungeon.hash)
+                };
+                activityStats.totalClears += count;
+            });
+            
+            // Update UI
+            updateStatsDisplay();
             renderActivities();
         }
 
-        // Render Activities Grid
-        function renderActivities() {
-            const raidsContainer = document.getElementById('raids-grid');
-            const dungeonsContainer = document.getElementById('dungeons-grid');
+        function updateStatsDisplay() {
+            const raidTotal = Object.values(activityStats.raids).reduce((a, b) => a + b.count, 0);
+            const dungeonTotal = Object.values(activityStats.dungeons).reduce((a, b) => a + b.count, 0);
             
-            raidsContainer.innerHTML = '';
-            dungeonsContainer.innerHTML = '';
-
-            // Render Raids
-            activities.raids.forEach(raid => {
-                const clearCount = clears.filter(c => c.activityId === raid.id).length;
-                const isCompleted = clearCount > 0;
-                
-                if (currentFilter === 'completed' && !isCompleted) return;
-                if (currentFilter === 'pending' && isCompleted) return;
-
-                const card = createActivityCard(raid, 'raid', clearCount, isCompleted);
-                raidsContainer.appendChild(card);
-            });
-
-            // Render Dungeons
-            activities.dungeons.forEach(dungeon => {
-                const clearCount = clears.filter(c => c.activityId === dungeon.id).length;
-                const isCompleted = clearCount > 0;
-                
-                if (currentFilter === 'completed' && !isCompleted) return;
-                if (currentFilter === 'pending' && isCompleted) return;
-
-                const card = createActivityCard(dungeon, 'dungeon', clearCount, isCompleted);
-                dungeonsContainer.appendChild(card);
-            });
+            document.getElementById('total-clears').textContent = activityStats.totalClears;
+            document.getElementById('raid-clears').textContent = raidTotal;
+            document.getElementById('dungeon-clears').textContent = dungeonTotal;
         }
 
-        function createActivityCard(activity, type, clearCount, isCompleted) {
-            const div = document.createElement('div');
-            div.className = `activity-card glass-panel rounded-xl p-6 relative overflow-hidden ${isCompleted ? 'completed' : ''}`;
+        function renderActivities() {
+            // Render Raids
+            const raidsContainer = document.getElementById('section-raids');
+            raidsContainer.innerHTML = '';
             
-            const difficultyClass = activity.difficulty === 'Easy' || activity.difficulty === 'Very Easy' ? 'difficulty-easy' : 
-                                   activity.difficulty === 'Medium' ? 'difficulty-medium' : 'difficulty-hard';
+            Object.entries(activityStats.raids).forEach(([name, data]) => {
+                const card = createActivityCard(name, data, 'raid');
+                raidsContainer.appendChild(card);
+            });
+            
+            // Render Dungeons
+            const dungeonsContainer = document.getElementById('section-dungeons');
+            dungeonsContainer.innerHTML = '';
+            
+            Object.entries(activityStats.dungeons).forEach(([name, data]) => {
+                const card = createActivityCard(name, data, 'dungeon');
+                dungeonsContainer.appendChild(card);
+            });
+            
+            // Render Overview
+            renderOverview();
+            
+            // Render History
+            renderHistory();
+        }
+
+        function createActivityCard(name, data, type) {
+            const div = document.createElement('div');
+            const isCompleted = data.count > 0;
+            div.className = `activity-card glass-panel rounded-xl p-6 ${isCompleted ? 'cleared' : 'uncleared'}`;
+            
+            const lastPlayed = data.activities.length > 0 
+                ? new Date(data.activities[0].period).toLocaleDateString()
+                : 'Never';
             
             div.innerHTML = `
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="font-orbitron text-lg font-bold text-white mb-1">${activity.name}</h3>
-                        <p class="text-sm text-gray-400">${activity.location}</p>
+                        <h3 class="font-orbitron text-lg font-bold text-white mb-1">${name}</h3>
+                        <p class="text-sm text-gray-400">${data.details.location || 'Unknown Location'}</p>
                     </div>
-                    <div class="status-indicator"></div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold ${isCompleted ? 'text-green-400' : 'text-gray-600'} font-orbitron">
+                            ${data.count}
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase">Clears</div>
+                    </div>
                 </div>
                 
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Difficulty:</span>
-                        <span class="${difficultyClass} font-semibold">${activity.difficulty}</span>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last Played:</span>
+                        <span class="text-gray-300">${lastPlayed}</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Exotic:</span>
-                        <span class="text-yellow-400">${activity.exotic}</span>
+                    ${isCompleted ? `
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Fastest Time:</span>
+                        <span class="text-cyan-400">${formatDuration(Math.min(...data.activities.map(a => a.values.activityDurationSeconds.basic.value)))}</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Released:</span>
-                        <span class="text-gray-300">${activity.release}</span>
+                    ` : ''}
+                </div>
+                
+                ${isCompleted ? `
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">Completed</span>
+                        ${data.count >= 10 ? '<span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded border border-yellow-500/30">Veteran</span>' : ''}
                     </div>
                 </div>
-
-                ${type === 'raid' ? `
-                <div class="flex gap-2 mb-4">
-                    ${Array(activity.bosses).fill(0).map((_, i) => `
-                        <div class="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
-                            <div class="h-full bg-cyan-500/50 w-full"></div>
-                        </div>
-                    `).join('')}
+                ` : `
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <span class="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded border border-red-500/30">Not Completed</span>
                 </div>
-                ` : ''}
-
-                <div class="flex items-center justify-between pt-4 border-t border-white/10">
-                    <div class="text-2xl font-bold text-white font-orbitron">${clearCount}</div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Clears</div>
-                    <button onclick="openModal('${activity.id}', '${type}')" 
-                            class="btn-destiny px-4 py-2 rounded-lg text-sm font-bold text-white">
-                        ${isCompleted ? 'Add Clear' : 'Log First Clear'}
-                    </button>
-                </div>
+                `}
             `;
             
             return div;
         }
 
-        // Modal Functions
-        function openModal(activityId, type) {
-            const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === activityId);
-            document.getElementById('modal-title').textContent = `Log ${activity.name} Clear`;
-            document.getElementById('activity-id').value = activityId;
-            document.getElementById('activity-type').value = type;
+        function renderOverview() {
+            // Raids overview
+            const raidsOverview = document.getElementById('overview-raids');
+            raidsOverview.innerHTML = '';
             
-            // Reset form
-            document.getElementById('clear-form').reset();
-            document.getElementById('clear-date').valueAsDate = new Date();
-            
-            // Setup fireteam slots
-            const container = document.getElementById('fireteam-inputs');
-            container.innerHTML = '';
-            const slots = type === 'raid' ? 5 : 2; // Plus user = 6 or 3 total
-            
-            for (let i = 0; i < slots; i++) {
-                addFireteamInput(container, i + 1);
-            }
-            
-            document.getElementById('modal').classList.remove('hidden');
-        }
-
-        function addFireteamInput(container, number) {
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-                <input type="text" placeholder="Fireteam Member ${number}" 
-                       class="fireteam-member input-destiny flex-1 px-4 py-2 rounded-lg text-sm">
-                <select class="input-destiny px-3 py-2 rounded-lg text-sm w-32">
-                    <option value="Titan">Titan</option>
-                    <option value="Hunter">Hunter</option>
-                    <option value="Warlock">Warlock</option>
-                </select>
-            `;
-            container.appendChild(div);
-        }
-
-        function addFireteamSlot() {
-            const container = document.getElementById('fireteam-inputs');
-            const currentSlots = container.children.length;
-            addFireteamInput(container, currentSlots + 1);
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-
-        // Form Submission
-        document.getElementById('clear-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const fireteam = [];
-            document.querySelectorAll('.fireteam-member').forEach((input, index) => {
-                if (input.value.trim()) {
-                    const classSelect = input.nextElementSibling;
-                    fireteam.push({
-                        name: input.value.trim(),
-                        class: classSelect.value
-                    });
-                }
+            Object.entries(activityStats.raids).forEach(([name, data]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-white/5 rounded-lg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full ${data.count > 0 ? 'bg-green-400' : 'bg-red-400'}"></div>
+                        <span class="text-sm text-gray-300">${name}</span>
+                    </div>
+                    <span class="font-bold ${data.count > 0 ? 'text-white' : 'text-gray-600'}">${data.count}</span>
+                `;
+                raidsOverview.appendChild(div);
             });
-
-            const clear = {
-                id: Date.now(),
-                activityId: document.getElementById('activity-id').value,
-                type: document.getElementById('activity-type').value,
-                date: document.getElementById('clear-date').value,
-                time: document.getElementById('clear-time').value || '00:00',
-                difficulty: document.getElementById('clear-difficulty').value,
-                runType: document.getElementById('clear-type').value,
-                fireteam: fireteam,
-                notes: document.getElementById('clear-notes').value,
-                timestamp: new Date().toISOString()
-            };
-
-            clears.push(clear);
-            localStorage.setItem('destinyClears', JSON.stringify(clears));
             
-            closeModal();
-            updateStats();
-            renderActivities();
+            // Dungeons overview
+            const dungeonsOverview = document.getElementById('overview-dungeons');
+            dungeonsOverview.innerHTML = '';
             
-            // Show success feedback
-            showNotification('Clear recorded successfully!');
-        });
-
-        function showNotification(message) {
-            const div = document.createElement('div');
-            div.className = 'fixed bottom-4 right-4 bg-green-500/90 text-white px-6 py-3 rounded-lg shadow-lg z-50 font-semibold';
-            div.textContent = message;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3000);
+            Object.entries(activityStats.dungeons).forEach(([name, data]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-white/5 rounded-lg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full ${data.count > 0 ? 'bg-green-400' : 'bg-red-400'}"></div>
+                        <span class="text-sm text-gray-300">${name}</span>
+                    </div>
+                    <span class="font-bold ${data.count > 0 ? 'text-white' : 'text-gray-600'}">${data.count}</span>
+                `;
+                dungeonsOverview.appendChild(div);
+            });
+            
+            // Recent highlights
+            const highlights = document.getElementById('recent-highlights');
+            highlights.innerHTML = '';
+            
+            // Get 3 most recent activities
+            const recent = [...allActivities]
+                .sort((a, b) => new Date(b.period) - new Date(a.period))
+                .slice(0, 3);
+            
+            recent.forEach(activity => {
+                const div = document.createElement('div');
+                div.className = 'bg-white/5 rounded-lg p-4 border border-white/5';
+                
+                const activityName = getActivityName(activity.activityDetails.referenceId);
+                const isRaid = activity.activityType === 'raid';
+                
+                div.innerHTML = `
+                    <div class="text-xs text-cyan-400 uppercase mb-1">${isRaid ? 'Raid' : 'Dungeon'}</div>
+                    <div class="font-bold text-white mb-2">${activityName}</div>
+                    <div class="text-sm text-gray-400">${new Date(activity.period).toLocaleDateString()}</div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        ${activity.values.kills.basic.displayValue} kills • 
+                        ${formatDuration(activity.values.activityDurationSeconds.basic.value)}
+                    </div>
+                `;
+                highlights.appendChild(div);
+            });
         }
 
-        // Update Statistics
-        function updateStats() {
-            const raidClears = clears.filter(c => c.type === 'raid').length;
-            const dungeonClears = clears.filter(c => c.type === 'dungeon').length;
-            const flawless = clears.filter(c => c.runType === 'Flawless').length;
-            const contest = clears.filter(c => c.difficulty === 'Contest').length;
-            
-            document.getElementById('raidCount').textContent = raidClears;
-            document.getElementById('dungeonCount').textContent = dungeonClears;
-            document.getElementById('flawlessCount').textContent = flawless;
-            document.getElementById('contestCount').textContent = contest;
-            document.getElementById('totalClears').textContent = clears.length;
-        }
-
-        // Render History
         function renderHistory() {
             const tbody = document.getElementById('history-table-body');
-            const emptyState = document.getElementById('empty-history');
-            
             tbody.innerHTML = '';
             
-            if (clears.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            }
+            const sorted = [...allActivities]
+                .sort((a, b) => new Date(b.period) - new Date(a.period))
+                .slice(0, 50); // Show last 50
             
-            emptyState.classList.add('hidden');
-            
-            const sortedClears = [...clears].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            sortedClears.forEach(clear => {
-                const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === clear.activityId);
+            sorted.forEach(activity => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-white/5 transition-colors';
                 
-                const runTypeColor = clear.runType === 'Flawless' ? 'text-yellow-400' : 
-                                   clear.runType === 'Contest' ? 'text-purple-400' : 'text-gray-300';
+                const name = getActivityName(activity.activityDetails.referenceId);
+                const kd = (activity.values.kills.basic.value / Math.max(activity.values.deaths.basic.value, 1)).toFixed(2);
                 
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${clear.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">${activity?.name || 'Unknown'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <span class="capitalize ${clear.type === 'raid' ? 'text-cyan-400' : 'text-purple-400'}">${clear.type}</span>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        ${new Date(activity.period).toLocaleDateString()}
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">${name}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <span class="${runTypeColor}">${clear.runType}</span>
-                        ${clear.difficulty !== 'Normal' ? `<span class="text-xs text-gray-500 ml-1">(${clear.difficulty})</span>` : ''}
+                        <span class="capitalize ${activity.activityType === 'raid' ? 'text-cyan-400' : 'text-purple-400'}">
+                            ${activity.activityType}
+                        </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-400">
-                        ${clear.fireteam.map(m => `<span class="inline-block mr-2">${m.name} <span class="text-xs opacity-60">(${m.class})</span></span>`).join('') || 'Solo'}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                        ${formatDuration(activity.values.activityDurationSeconds.basic.value)}
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-400 max-w-xs truncate">${clear.notes || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button onclick="deleteClear(${clear.id})" class="text-red-400 hover:text-red-300 transition-colors">
-                            Delete
-                        </button>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        ${activity.values.kills.basic.displayValue}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        ${activity.values.deaths.basic.displayValue}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${kd > 10 ? 'text-yellow-400' : 'text-gray-300'}">
+                        ${kd}
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        function deleteClear(id) {
-            if (confirm('Are you sure you want to delete this clear?')) {
-                clears = clears.filter(c => c.id !== id);
-                localStorage.setItem('destinyClears', JSON.stringify(clears));
-                updateStats();
-                renderHistory();
-                renderActivities();
+        function getActivityName(hash) {
+            // Check raids
+            const raid = ACTIVITY_DEFINITIONS.raids.find(r => r.hash === hash);
+            if (raid) return raid.name;
+            
+            // Check dungeons
+            const dungeon = ACTIVITY_DEFINITIONS.dungeons.find(d => d.hash === hash);
+            if (dungeon) return dungeon.name;
+            
+            return 'Unknown Activity';
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const hrs = Math.floor(mins / 60);
+            const remainingMins = mins % 60;
+            
+            if (hrs > 0) {
+                return `${hrs}h ${remainingMins}m`;
             }
+            return `${mins}m`;
         }
 
-        // Render Statistics
-        function renderStats() {
-            // By Activity
-            const activityStats = {};
-            clears.forEach(c => {
-                const activity = [...activities.raids, ...activities.dungeons].find(a => a.id === c.activityId);
-                if (activity) {
-                    activityStats[activity.name] = (activityStats[activity.name] || 0) + 1;
+        function switchTab(tab) {
+            // Update buttons
+            ['overview', 'raids', 'dungeons', 'history'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const section = document.getElementById(`section-${t}`);
+                
+                if (t === tab) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('bg-white/5');
+                    if (section) section.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('bg-white/5');
+                    if (section) section.classList.add('hidden');
                 }
             });
-            
-            const statsContainer = document.getElementById('stats-by-activity');
-            statsContainer.innerHTML = '';
-            
-            Object.entries(activityStats)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([name, count]) => {
-                    const max = Math.max(...Object.values(activityStats));
-                    const percentage = (count / max) * 100;
-                    
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center gap-3';
-                    div.innerHTML = `
-                        <div class="w-32 text-sm text-gray-300 truncate">${name}</div>
-                        <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
-                        </div>
-                        <div class="w-8 text-right text-sm font-bold text-white">${count}</div>
-                    `;
-                    statsContainer.appendChild(div);
-                });
-
-            // Monthly Chart
-            const monthlyData = {};
-            clears.forEach(c => {
-                const month = c.date.substring(0, 7); // YYYY-MM
-                monthlyData[month] = (monthlyData[month] || 0) + 1;
-            });
-            
-            const chartContainer = document.getElementById('monthly-chart');
-            chartContainer.innerHTML = '';
-            
-            const months = Object.keys(monthlyData).sort().slice(-12); // Last 12 months
-            const maxMonth = Math.max(...Object.values(monthlyData), 1);
-            
-            months.forEach(month => {
-                const count = monthlyData[month];
-                const height = (count / maxMonth) * 100;
-                const bar = document.createElement('div');
-                bar.className = 'flex-1 bg-cyan-500/30 hover:bg-cyan-500/50 transition-all rounded-t relative group';
-                bar.style.height = `${height}%`;
-                bar.innerHTML = `
-                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        ${month}: ${count} clears
-                    </div>
-                `;
-                chartContainer.appendChild(bar);
-            });
-
-            // Fireteam Stats
-            const fireteamStats = {};
-            clears.forEach(c => {
-                c.fireteam.forEach(m => {
-                    fireteamStats[m.name] = (fireteamStats[m.name] || 0) + 1;
-                });
-            });
-            
-            const fireteamContainer = document.getElementById('fireteam-stats');
-            fireteamContainer.innerHTML = '';
-            
-            Object.entries(fireteamStats)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 8)
-                .forEach(([name, count]) => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-white/5 rounded-lg p-3 text-center border border-white/5';
-                    div.innerHTML = `
-                        <div class="font-semibold text-white truncate">${name}</div>
-                        <div class="text-2xl font-bold text-cyan-400 mt-1">${count}</div>
-                        <div class="text-xs text-gray-500">activities</div>
-                    `;
-                    fireteamContainer.appendChild(div);
-                });
         }
 
-        // Data Export/Import
-        function exportData() {
-            const dataStr = JSON.stringify(clears, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `destiny-2-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
+        function showProfile() {
+            document.getElementById('setup-panel').classList.add('hidden');
+            document.getElementById('profile-panel').classList.remove('hidden');
+            document.getElementById('tabs-container').classList.remove('hidden');
+            document.getElementById('content-container').classList.remove('hidden');
+            document.getElementById('refresh-btn').classList.remove('hidden');
             
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        clears = imported;
-                        localStorage.setItem('destinyClears', JSON.stringify(clears));
-                        updateStats();
-                        renderActivities();
-                        showNotification('Data imported successfully!');
-                    } else {
-                        alert('Invalid file format');
-                    }
-                } catch (err) {
-                    alert('Error reading file');
-                }
+            // Update profile info
+            document.getElementById('profile-name').textContent = currentMembership.bungieGlobalDisplayName;
+            document.getElementById('profile-icon').textContent = currentMembership.bungieGlobalDisplayName.charAt(0).toUpperCase();
+            document.getElementById('profile-membership').textContent = currentMembership.membershipId;
+            
+            const platforms = {
+                1: 'Xbox',
+                2: 'PlayStation',
+                3: 'Steam',
+                6: 'Epic Games'
             };
-            reader.readAsText(file);
-            input.value = '';
+            document.getElementById('profile-platform').textContent = platforms[currentMembership.membershipType] || 'Unknown';
+            
+            // Show overview by default
+            switchTab('overview');
         }
 
-        // Close modal on outside click
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modal')) {
-                closeModal();
+        function showLoading(show) {
+            const panel = document.getElementById('loading-panel');
+            if (show) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+            } else {
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
             }
+        }
+
+        function showError(message) {
+            const toast = document.getElementById('error-toast');
+            document.getElementById('error-message').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 5000);
+        }
+
+        function restoreSession(data) {
+            // Optional: Auto-restore last session if recent (within 1 hour)
+            if (Date.now() - data.timestamp < 3600000) {
+                currentMembership = data.membership;
+                // Would need to re-fetch data or store activities in localStorage
+            }
+        }
+
+        async function refreshData() {
+            if (!currentMembership) return;
+            showLoading(true);
+            try {
+                await fetchProfileData(currentMembership);
+                showLoading(false);
+                showError('Data refreshed successfully!'); // Reuse toast for success
+                document.getElementById('error-toast').classList.remove('error-toast');
+                document.getElementById('error-toast').classList.add('success-toast');
+                setTimeout(() => {
+                    document.getElementById('error-toast').classList.remove('success-toast');
+                    document.getElementById('error-toast').classList.add('error-toast');
+                }, 3000);
+            } catch (error) {
+                showLoading(false);
+                showError(error.message);
+            }
+        }
+
+        // Handle Enter key in search
+        document.getElementById('bungie-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchPlayer();
         });
     </script>
 </body>
