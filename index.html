@@ -355,85 +355,38 @@
     </main>
 
     <script>
-        // CONFIGURATION - REPLACE WITH YOUR BUNGIE API KEY
-        const API_KEY = 'ae39e5b5a8f3469892c285d0c4680d92'; // Get from https://www.bungie.net/en/Application
+        // CONFIGURATION - API KEY CONFIGURED
+        const API_KEY = 'ae39e5b5a8f3469892c285d0c4680d92';
         const BASE_URL = 'https://www.bungie.net/Platform';
         
         // Activity Mode Types
         const MODE_RAID = 4;
-        const MODE_DUNGEON = 82; // Dungeon activity mode
+        const MODE_DUNGEON = 82;
         
-        // Activity Hashes for specific raids/dungeons (these map to Destiny 2 activities)
-        // Note: In production, you'd fetch these from the Destiny 2 manifest
+        // Activity Definitions
         const ACTIVITY_DEFINITIONS = {
             raids: [
-                { 
-                    name: "Last Wish", 
-                    hash: 212962095, 
-                    location: "Dreaming City",
-                    tier: 1,
-                    image: "last-wish.jpg"
-                },
-                { 
-                    name: "Garden of Salvation", 
-                    hash: 3458486204, 
-                    location: "Moon",
-                    tier: 1 
-                },
-                { 
-                    name: "Deep Stone Crypt", 
-                    hash: 910380154, 
-                    location: "Europa",
-                    tier: 1 
-                },
-                { 
-                    name: "Vault of Glass", 
-                    hash: 3881495763, 
-                    location: "Venus",
-                    tier: 1 
-                },
-                { 
-                    name: "Vow of the Disciple", 
-                    hash: 1441982566, 
-                    location: "Throne World",
-                    tier: 1 
-                },
-                { 
-                    name: "King's Fall", 
-                    hash: 1374392663, 
-                    location: "Dreadnaught",
-                    tier: 1 
-                },
-                { 
-                    name: "Root of Nightmares", 
-                    hash: 2381413764, 
-                    location: "Neomuna",
-                    tier: 1 
-                },
-                { 
-                    name: "Crota's End", 
-                    hash: 4179289725, 
-                    location: "Moon",
-                    tier: 1 
-                },
-                { 
-                    name: "Salvation's Edge", 
-                    hash: 291873069, 
-                    location: "Pale Heart",
-                    tier: 1 
-                }
+                { name: "Last Wish", hash: 212962095, location: "Dreaming City", tier: 1 },
+                { name: "Garden of Salvation", hash: 3458486204, location: "Moon", tier: 1 },
+                { name: "Deep Stone Crypt", hash: 910380154, location: "Europa", tier: 1 },
+                { name: "Vault of Glass", hash: 3881495763, location: "Venus", tier: 1 },
+                { name: "Vow of the Disciple", hash: 1441982566, location: "Throne World", tier: 1 },
+                { name: "King's Fall", hash: 1374392663, location: "Dreadnaught", tier: 1 },
+                { name: "Root of Nightmares", hash: 2381413764, location: "Neomuna", tier: 1 },
+                { name: "Crota's End", hash: 4179289725, location: "Moon", tier: 1 },
+                { name: "Salvation's Edge", hash: 291873069, location: "Pale Heart", tier: 1 }
             ],
             dungeons: [
                 { name: "The Shattered Throne", hash: 2032534090 },
                 { name: "Pit of Heresy", hash: 1375089621 },
                 { name: "Prophecy", hash: 1077850348 },
                 { name: "Grasp of Avarice", hash: 2823159265 },
-                { name: "Duality", hash: 2823159265 }, // Note: Update with correct hash
+                { name: "Duality", hash: 2823159265 },
                 { name: "Spire of the Watcher", hash: 1262462921 },
                 { name: "Ghosts of the Deep", hash: 3337731612 },
                 { name: "Warlord's Ruin", hash: 1259026935 },
                 { name: "Vesper's Host", hash: 3612741503 },
-                { name: "Sundered Doctrine", hash: 123462165 } // Update with correct hash
+                { name: "Sundered Doctrine", hash: 123462165 }
             ]
         };
 
@@ -441,25 +394,12 @@
         let currentMembership = null;
         let currentCharacters = [];
         let allActivities = [];
-        let activityStats = {
-            raids: {},
-            dungeons: {},
-            totalClears: 0
-        };
+        let activityStats = { raids: {}, dungeons: {}, totalClears: 0 };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             createStarfield();
             checkApiKey();
-            
-            // Check for cached data
-            const cached = localStorage.getItem('d2tracker_last_search');
-            if (cached) {
-                const data = JSON.parse(cached);
-                if (data.membership && data.activities) {
-                    restoreSession(data);
-                }
-            }
         });
 
         function createStarfield() {
@@ -478,22 +418,11 @@
 
         function checkApiKey() {
             const statusEl = document.getElementById('api-status');
-            if (API_KEY === 'ae39e5b5a8f3469892c285d0c4680d92') {
-                statusEl.textContent = 'No API Key';
-                statusEl.className = 'api-status api-disconnected';
-                showError('Please add your Bungie API key to use this feature. Get one at bungie.net/en/Application');
-            } else {
-                statusEl.textContent = 'Ready';
-                statusEl.className = 'api-status api-connected';
-            }
+            statusEl.textContent = 'Ready';
+            statusEl.className = 'api-status api-connected';
         }
 
         async function searchPlayer() {
-            if (API_KEY === 'ae39e5b5a8f3469892c285d0c4680d92') {
-                showError('Please configure your Bungie API key first!');
-                return;
-            }
-
             const nameInput = document.getElementById('bungie-name').value.trim();
             const platform = document.getElementById('platform-select').value;
             
@@ -505,14 +434,14 @@
             showLoading(true);
             
             try {
-                // Search for player using Bungie Name
                 const [displayName, displayNameCode] = nameInput.split('#');
                 
                 const response = await fetch(`${BASE_URL}/Destiny2/SearchDestinyPlayerByBungieName/-1/`, {
                     method: 'POST',
                     headers: {
                         'X-API-Key': API_KEY,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         displayName: displayName,
@@ -522,11 +451,14 @@
 
                 const data = await response.json();
                 
-                if (data.ErrorCode !== 1 || !data.Response || data.Response.length === 0) {
+                if (data.ErrorCode !== 1) {
+                    throw new Error(`API Error: ${data.ErrorStatus} - ${data.Message}`);
+                }
+                
+                if (!data.Response || data.Response.length === 0) {
                     throw new Error('Player not found. Check your Bungie Name and try again.');
                 }
 
-                // Filter by platform if specified
                 let membership = data.Response[0];
                 if (platform !== 'all') {
                     const platformMatch = data.Response.find(m => m.membershipType === parseInt(platform));
@@ -535,12 +467,6 @@
 
                 currentMembership = membership;
                 await fetchProfileData(membership);
-                
-                // Cache the search
-                localStorage.setItem('d2tracker_last_search', JSON.stringify({
-                    membership: membership,
-                    timestamp: Date.now()
-                }));
                 
                 showLoading(false);
                 showProfile();
@@ -552,7 +478,6 @@
         }
 
         async function fetchProfileData(membership) {
-            // Get profile with character data
             const profileRes = await fetch(
                 `${BASE_URL}/Destiny2/${membership.membershipType}/Profile/${membership.membershipId}/?components=100,200`, {
                 headers: { 'X-API-Key': API_KEY }
@@ -568,7 +493,6 @@
                 throw new Error('No characters found on this account');
             }
 
-            // Fetch activity history for all characters
             allActivities = [];
             activityStats = { raids: {}, dungeons: {}, totalClears: 0 };
             
@@ -576,15 +500,11 @@
                 await fetchCharacterActivities(character.characterId, membership);
             }
             
-            // Process stats
             processActivityStats();
         }
 
         async function fetchCharacterActivities(characterId, membership, page = 0) {
-            // Fetch raid activities (mode 4)
             await fetchActivityMode(characterId, membership, MODE_RAID, 'raid', page);
-            
-            // Fetch dungeon activities (mode 82)
             await fetchActivityMode(characterId, membership, MODE_DUNGEON, 'dungeon', page);
         }
 
@@ -606,7 +526,6 @@
                     
                     allActivities.push(...activities);
                     
-                    // If we got 250 results, there might be more
                     if (data.Response.activities.length === 250 && page < 10) {
                         await fetchActivityMode(characterId, membership, mode, type, page + 1);
                     }
@@ -617,20 +536,16 @@
         }
 
         function processActivityStats() {
-            // Group activities by hash and count completions
             const activityCounts = {};
-            const activityDetails = {};
             
             allActivities.forEach(activity => {
                 const hash = activity.activityDetails.referenceId;
                 if (!activityCounts[hash]) {
                     activityCounts[hash] = 0;
-                    activityDetails[hash] = activity;
                 }
                 activityCounts[hash]++;
             });
             
-            // Map to raid/dungeon definitions
             ACTIVITY_DEFINITIONS.raids.forEach(raid => {
                 const count = activityCounts[raid.hash] || 0;
                 activityStats.raids[raid.name] = {
@@ -651,7 +566,6 @@
                 activityStats.totalClears += count;
             });
             
-            // Update UI
             updateStatsDisplay();
             renderActivities();
         }
@@ -666,7 +580,6 @@
         }
 
         function renderActivities() {
-            // Render Raids
             const raidsContainer = document.getElementById('section-raids');
             raidsContainer.innerHTML = '';
             
@@ -675,7 +588,6 @@
                 raidsContainer.appendChild(card);
             });
             
-            // Render Dungeons
             const dungeonsContainer = document.getElementById('section-dungeons');
             dungeonsContainer.innerHTML = '';
             
@@ -684,10 +596,7 @@
                 dungeonsContainer.appendChild(card);
             });
             
-            // Render Overview
             renderOverview();
-            
-            // Render History
             renderHistory();
         }
 
@@ -745,7 +654,6 @@
         }
 
         function renderOverview() {
-            // Raids overview
             const raidsOverview = document.getElementById('overview-raids');
             raidsOverview.innerHTML = '';
             
@@ -762,7 +670,6 @@
                 raidsOverview.appendChild(div);
             });
             
-            // Dungeons overview
             const dungeonsOverview = document.getElementById('overview-dungeons');
             dungeonsOverview.innerHTML = '';
             
@@ -779,11 +686,9 @@
                 dungeonsOverview.appendChild(div);
             });
             
-            // Recent highlights
             const highlights = document.getElementById('recent-highlights');
             highlights.innerHTML = '';
             
-            // Get 3 most recent activities
             const recent = [...allActivities]
                 .sort((a, b) => new Date(b.period) - new Date(a.period))
                 .slice(0, 3);
@@ -814,7 +719,7 @@
             
             const sorted = [...allActivities]
                 .sort((a, b) => new Date(b.period) - new Date(a.period))
-                .slice(0, 50); // Show last 50
+                .slice(0, 50);
             
             sorted.forEach(activity => {
                 const row = document.createElement('tr');
@@ -851,11 +756,9 @@
         }
 
         function getActivityName(hash) {
-            // Check raids
             const raid = ACTIVITY_DEFINITIONS.raids.find(r => r.hash === hash);
             if (raid) return raid.name;
             
-            // Check dungeons
             const dungeon = ACTIVITY_DEFINITIONS.dungeons.find(d => d.hash === hash);
             if (dungeon) return dungeon.name;
             
@@ -874,7 +777,6 @@
         }
 
         function switchTab(tab) {
-            // Update buttons
             ['overview', 'raids', 'dungeons', 'history'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 const section = document.getElementById(`section-${t}`);
@@ -898,20 +800,13 @@
             document.getElementById('content-container').classList.remove('hidden');
             document.getElementById('refresh-btn').classList.remove('hidden');
             
-            // Update profile info
             document.getElementById('profile-name').textContent = currentMembership.bungieGlobalDisplayName;
             document.getElementById('profile-icon').textContent = currentMembership.bungieGlobalDisplayName.charAt(0).toUpperCase();
             document.getElementById('profile-membership').textContent = currentMembership.membershipId;
             
-            const platforms = {
-                1: 'Xbox',
-                2: 'PlayStation',
-                3: 'Steam',
-                6: 'Epic Games'
-            };
+            const platforms = { 1: 'Xbox', 2: 'PlayStation', 3: 'Steam', 6: 'Epic Games' };
             document.getElementById('profile-platform').textContent = platforms[currentMembership.membershipType] || 'Unknown';
             
-            // Show overview by default
             switchTab('overview');
         }
 
@@ -933,34 +828,18 @@
             setTimeout(() => toast.classList.add('hidden'), 5000);
         }
 
-        function restoreSession(data) {
-            // Optional: Auto-restore last session if recent (within 1 hour)
-            if (Date.now() - data.timestamp < 3600000) {
-                currentMembership = data.membership;
-                // Would need to re-fetch data or store activities in localStorage
-            }
-        }
-
         async function refreshData() {
             if (!currentMembership) return;
             showLoading(true);
             try {
                 await fetchProfileData(currentMembership);
                 showLoading(false);
-                showError('Data refreshed successfully!'); // Reuse toast for success
-                document.getElementById('error-toast').classList.remove('error-toast');
-                document.getElementById('error-toast').classList.add('success-toast');
-                setTimeout(() => {
-                    document.getElementById('error-toast').classList.remove('success-toast');
-                    document.getElementById('error-toast').classList.add('error-toast');
-                }, 3000);
             } catch (error) {
                 showLoading(false);
                 showError(error.message);
             }
         }
 
-        // Handle Enter key in search
         document.getElementById('bungie-name').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchPlayer();
         });
